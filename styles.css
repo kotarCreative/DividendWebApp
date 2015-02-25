@@ -67,6 +67,7 @@ td, th {
     position: absolute;
     top: 920px;
     left: 50px;
+    height: 50px;
     font-size: 15px;
     font-family: fantasy;  
     z-index: 2;
@@ -83,6 +84,7 @@ td, th {
     font-family: fantasy;
     top: 980px;
     left: 50px;
+    height: 200px;
 }
 
 #Container {
@@ -92,8 +94,10 @@ td, th {
 }
 
 #Spacer {
-    position: relative;
-    top: 1300px;
-    width: 1000px;
-    height: 100px;
+    position: absolute;
+    font-size: 15px;
+    font-family: fantasy;
+    top: 1500px;
+    width: 1200px;
+    height: 20px;
 }
