@@ -1,0 +1,99 @@
+h {
+    font-size: 40px;
+    text-align: center;
+    font-family: monospace;
+}
+
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 25px solid #47b;
+    margin: 1em 0;
+    padding: 0;
+}
+
+body {
+  font: 10px sans-serif;
+}
+
+vis {
+    z-index: 1;
+}
+
+.axis path {
+    fill: none;
+    stroke: #777;
+    shape-rendering: crispEdges;
+}
+    
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.axis text {
+    font-family: fantasy;
+    font-size: 20px;
+}
+    
+#LineChart {
+    float: left
+}
+
+.legend {
+    font-size: 10px;
+    font-weight: bold;
+    text-anchor: right;
+} 
+    
+td, th {
+    padding: 1px 4px;
+    border: 1px black solid;
+}
+
+#dropDownContainer {
+    position: absolute;
+    top: 920px;
+    left: 50px;
+    font-size: 15px;
+    font-family: fantasy;  
+    z-index: 2;
+
+}
+
+#dropDown {
+ top: 5px;  
+}
+
+#tableWrapper {
+    position: absolute;
+    font-size: 15px;
+    font-family: fantasy;
+    top: 980px;
+    left: 50px;
+}
+
+#Container {
+    position:relative;
+    font-size: 15px;
+    font-family: monospace;
+}
+
+#Spacer {
+    position: relative;
+    top: 1300px;
+    width: 1000px;
+    height: 100px;
+}

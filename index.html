@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="http://d3js.org/d3.v3.js"></script>
+<link rel="stylesheet" type="text/css" href="styles.css">
+<body>
+<h>US DIVIDEND CHAMPIONS </h>
+<hr>
+
+<svg id="LineChart"></svg>
+<div id="dropDownContainer">
+    Select Sector To Display
+<div id="dropDown"></div>
+</div>
+<div id="tableWrapper">
+    Click Header To Sort By Attribute
+<div id="Container"></div>
+</div>
+<div id="Spacer"></div>
+<script>
+    
+    //creates a dropdown menu 
+    var arrayOfValues = ["Energy","ConsumerDiscretionary","ConsumerStaples","Financials",
+                         "Industrials","InfoTech","Materials","Telecomm","Utilities","HealthCare"];
+    
+    d3.select("#dropDown")
+      .append("select")
+      .on("change", function() {
+            value = this.options[this.selectedIndex].__data__;
+            d3.select("#"+value)
+              .style("Visibility","visible");
+            d3.select("#Container table")
+              .remove();
+            createTable(value);  
+    })
+      .selectAll("option")
+      .data(arrayOfValues)
+      .enter()
+      .append("option")
+      .attr("value",function(d) {return d;})
+      .text(function(d) {return d;});
+            
+var margin = {top: 20, right: 120, bottom: 30, left: 50},
+    width = 1060 - margin.left - margin.right,
+    height = 800 - margin.top - margin.bottom;
+
+var parseDate = d3.time.format("%Y").parse;
+
+var x = d3.time.scale()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var color = d3.scale.category10();
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var line = d3.svg.line()
+    .interpolate("basis")
+    .x(function(d) { return x(d.Year); })
+    .y(function(d) { return y(d.Average); });
+
+var vis = d3.select("#LineChart")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+//Adapted from http://bl.ocks.org/mbostock/3884955
+d3.csv("data.csv", function(error, data) {
+  color.domain(d3.keys(data[0]).filter(function(key) { return key !== "Year"; }));
+    
+  data.forEach(function(d) {
+    d.Year = parseDate(d.Year);
+  });
+
+  var sectors = color.domain().map(function(name) {
+    return {
+      name: name,
+      values: data.map(function(d) {
+        return {Year: d.Year, Average: +d[name]};
+      })
+    };
+  });
+    
+  x.domain(d3.extent(data, function(d) { return d.Year; }));
+
+  y.domain([
+    d3.min(sectors, function(c) { return d3.min(c.values, function(v) { return v.Average; }); }),
+    d3.max(sectors, function(c) { return d3.max(c.values, function(v) { return v.Average; }); })
+  ]);
+
+  vis.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+  vis.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Average Dividends Paid (%)");
+
+  var sector = vis.selectAll(".sector")
+      .data(sectors)
+      .enter().append("g")
+      .attr("class", "sector")
+      .attr("id",function(d) { return d.name; })
+      .style("visibility","visible");;
+
+  sector.append("path")
+      .attr("class", "line")
+      .attr("d", function(d) { return line(d.values); })
+      .style("stroke", function(d) { return color(d.name); });
+    
+  sector.append("text")
+      .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
+      .attr("transform", function(d) { return "translate(" + x(d.value.Year) + "," + y(d.value.Average) + ")"; })
+      .attr("x", 3)
+      .attr("dy", ".35em")
+      .text(function(d) { return d.name; });
+    
+//Adapted from http://zeroviscosity.com/d3-js-step-by-step/step-3-adding-a-legend
+    //creates a legend for the chart
+    var legendRectSize = 20;                                 
+    var legendSpacing = 4;                                   
+    
+     var legend = vis.selectAll('.legend')
+          .data(color.domain())                                  
+          .enter()                                                
+          .append('g')                                           
+          .attr('class', 'legend')                                
+          .attr('transform', function(d, i) {                     
+            var height = legendRectSize + legendSpacing;          
+            var offset =  height * color.domain().length / 2;     
+            var horz = 2 * legendRectSize;                       
+            var vert = i * height;                       
+            return 'translate(' + horz + ',' + vert + ')';        
+          });
+    
+        legend.append('rect')                                     
+          .attr('width', legendRectSize)                          
+          .attr('height', legendRectSize)                         
+          .style('fill', color)                                   
+          .style('stroke', color)
+          .on("click", function(d){                     
+                // Determine if current line is visible 
+                var visibility = d3.select('#' + d).style("visibility") == "visible" ? "hidden" : "visible";           
+                // Hide or show the elements based on the ID
+                d3.select('#'+ d) 
+                    .transition().duration(100)          
+                    .style("visibility", visibility); 
+                })                 
+        ;                     
+
+        legend.append('text')                                     
+          .attr('x', legendRectSize + legendSpacing)              
+          .attr('y', legendRectSize - legendSpacing)           
+          .text(function(d) { return d; });                       
+
+});
+
+var Sector = "Energy"; 
+    
+// adapted from http://jsfiddle.net/7WQjr/   
+// Creates table for current companies 
+function createTable(Sector) {
+    
+    d3.csv(Sector + ".csv", function(data) {
+
+    var columns = ["CompanyName","Price","PriceEarning","EPS","ChowderRule","FiveYearPayback"];
+        
+    var table = d3.select("#Container")
+                .append("table")
+                .style("border", "2px black solid")
+                .style("border-collapse", "collapse"),
+        thead = table.append("thead"),
+        tbody = table.append("tbody");
+
+    thead.append("tr")
+        .selectAll("th")
+        .data(columns)
+        .enter()
+        .append("th")
+        .text(function(column) { return column; })
+        .on("click", function(d){ 
+                if (d == "Price") {
+                    table.selectAll("tbody tr") 
+                         .sort(function(a, b) {
+                    return d3.descending(a.Price, b.Price);}); 
+                } else if (d == "PriceEarning") {
+                    table.selectAll("tbody tr") 
+                         .sort(function(a, b) {
+                    return d3.descending(a.PriceEarning, b.PriceEarning);});
+                } else if (d == "EPS") {
+                    table.selectAll("tbody tr") 
+                         .sort(function(a, b) {
+                    return d3.descending(a.EPS, b.EPS);}); 
+                } else if (d == "ChowderRule") {
+                        table.selectAll("tbody tr") 
+                         .sort(function(a, b) {
+                    return d3.descending(a.ChowderRule, b.ChowderRule);});
+                } else if (d == "FiveYearPayback") {
+                    table.selectAll("tbody tr") 
+                         .sort(function(a, b) {
+                    return d3.descending(a.FiveYearPayback, b.FiveYearPayback);}); 
+                } else if (d == "CompanyName") {
+                    table.selectAll("tbody tr") 
+                         .sort(function(a, b) {
+                    return d3.ascending(a.CompanyName, b.CompanyName);});
+                }
+                });
+        
+    var rows = tbody.selectAll("tr")
+        .data(data)
+        .enter()
+        .append("tr");
+
+    var cells = rows.selectAll("td")
+        .data(function(row) {
+            return columns.map(function(column) {
+                return {column: column, value: row[column]};
+            });
+        })
+        .enter()
+        .append("td")
+        .text(function(d) { return d.value; });
+        
+    if (sorted == true) {
+       table.selectAll("tbody tr") 
+        .sort(function(a, b) {
+                return d3.descending(a.HealthCare, b.HealthCare);}); 
+    }
+});
+};
+    
+function refillTable(Sector) {
+    d3.csv(Sector + ".csv", function(data) {
+
+    var columns = ["CompanyName","Price","Price/Earning","EPS(%)","ChowderRule","5-YearPayback"];
+        
+    d3.select("#Container table thead")
+        .selectAll("th")
+        .data(columns)
+        .enter()
+        .append("th")
+        .text(function(column) { return column; })
+        .on("click", function(d){                     
+                // Determine if current line is visible 
+                var visibility = d3.select('#' + d).style("visibility") == "visible" ? "hidden" : "visible";           
+                // Hide or show the elements based on the ID
+                d3.select('#'+ d) 
+                    .transition().duration(100)          
+                    .style("visibility", visibility);
+                });
+        
+    var rows = d3.select("#Container table tbody").selectAll("tr")
+        .data(data)
+        .enter()
+        .append("tr");
+
+    var cells = rows.selectAll("td")
+        .data(function(row) {
+            return columns.map(function(column) {
+                return {column: column, value: row[column]};
+            });
+        })
+        .enter()
+        .append("td")
+        .text(function(d) { return d.value; });
+    });
+};
+    
+createTable(Sector);
+
+</script>
